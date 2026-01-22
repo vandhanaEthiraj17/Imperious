@@ -4,9 +4,12 @@ import logging
 # Configure logger
 logger = logging.getLogger(__name__)
 
+import os
+
 # Database connection
 try:
-    client = MongoClient("mongodb://localhost:27017/")
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    client = MongoClient(mongo_uri)
     db = client["imperious"]
     logger.info("Connected successfully to MongoDB")
 except Exception as e:

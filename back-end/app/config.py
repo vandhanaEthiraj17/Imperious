@@ -10,8 +10,8 @@ STUDENT_DATA_FILE = os.path.join(BASE_DIR, "students.xlsx")
 class Config:
     """Base configuration."""
 
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-prod-12345"
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "jwt-secret-key-change-in-prod-12345"
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
 
     # Upload settings

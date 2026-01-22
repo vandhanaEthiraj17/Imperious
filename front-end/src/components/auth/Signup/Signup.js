@@ -115,14 +115,31 @@ const Signup = () => {
                 )
             };
 
-            // console.log('Submitting signup data:', signupData);  // Debug log
-            await signup(signupData);
+            console.log('Submitting signup data:', signupData);
+            const response = await signup(signupData);
+            console.log('Signup response:', response);
             navigate('/signin');
 
         } catch (err) {
-            console.error('Signup error:', err);
+            console.error('Signup error object:', err);
+            if (err.response) {
+                console.error('Error response data:', err.response.data);
+                console.error('Error response status:', err.response.status);
+
+                if (err.response.status === 409) {
+                    setError('Account already exists. Please log in.');
+                    // Optional: You could also automatically redirect to login after a delay
+                    return;
+                }
+            } else if (err.request) {
+                console.error('Error request (no response received):', err.request);
+            } else {
+                console.error('Error setting up request:', err.message);
+            }
+
             setError(
                 err.response?.data?.message ||
+                (err.message === "Network Error" ? "Network Error: Cannot reach server. Ensure backend is running." : err.message) ||
                 'Failed to create an account'
             );
         } finally {

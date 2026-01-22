@@ -24,13 +24,23 @@ const Signin = () => {
 
             if (success) {
                 navigate('/');
+            } else {
+                setError('Login failed. Please check your credentials.');
             }
         } catch (error) {
             console.error('Login error:', error);
             if (error.message === 'Network Error') {
                 setError('Unable to connect to server. Please try again.');
+            } else if (error.response) {
+                if (error.response.status === 404) {
+                    setError('User does not exist. Please sign up.');
+                } else if (error.response.status === 401) {
+                    setError('Invalid credentials. Please try again.');
+                } else {
+                    setError(error.response.data?.message || 'Login failed. Please try again.');
+                }
             } else {
-                setError(error.response?.data?.message || 'Login failed. Please try again.');
+                setError('Login failed. Please try again.');
             }
         } finally {
             setLoading(false);

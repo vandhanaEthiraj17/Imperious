@@ -66,28 +66,22 @@ def signup():
             except (ValueError, TypeError):
                 return jsonify({"message": "Batch must be a valid number"}), 400
 
-            # Verify student record for students/alumni
-            if not User.verify_student_record(
-                regno=data.get("regno"),
-                dept=data.get("dept"),
-                name=data.get("name"),
-                batch=data.get("batch"),
-                is_alumni=role == "alumni",
-            ):
-                return jsonify({"message": "Student/Alumni record not found."}), 400
+            # Verify student record check REMOVED as per requirements
+            # We now allow any user to sign up if they provide valid details
+            pass
 
         # Check if email already exists
         if User.find_by_email(data.get("email")):
             return (
                 jsonify({"message": "An account with this email already exists."}),
-                400,
+                409,
             )
         if role != "staff" and User.find_by_regno(data.get("regno")):
             return (
                 jsonify(
                     {"message": "A user with this registration number already exists."}
                 ),
-                400,
+                409,
             )
 
         # Create user
@@ -99,25 +93,32 @@ def signup():
 
     except Exception as e:
         current_app.logger.error(f"Signup error: {str(e)}")
-        return jsonify({"message": "An error occurred during signup"}), 500
+        return jsonify({"message": f"An error occurred during signup: {str(e)}"}), 500
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
     try:
         data = request.get_json()
+        print(f"DEBUG: Login Request Data: {data}")
         email = data.get("email")
         password = data.get("password")
 
         # Find user by email
         user = User.find_by_email(email)
+        print(f"DEBUG: User found: {user is not None}")
         if not user:
-            return jsonify({"message": "Invalid email or password"}), 401
+            print("DEBUG: User not found return 404")
+            return jsonify({"message": "User does not exist"}), 404
 
         # Verify password
-        if not User.verify_password(password, user["password"]):
+        print("DEBUG: Verifying password...")
+        is_valid = User.verify_password(password, user["password"])
+        print(f"DEBUG: Password Valid: {is_valid}")
+        
+        if not is_valid:
             return jsonify({"message": "Invalid email or password"}), 401
-
+        
         # Create tokens
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)
@@ -140,6 +141,9 @@ def login():
 
     except Exception as e:
         current_app.logger.error(f"Login error: {str(e)}")
+        print(f"DEBUG: Exception in login: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"message": "An error occurred during login"}), 500
 
 
